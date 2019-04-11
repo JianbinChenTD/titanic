@@ -7,18 +7,44 @@ az network vnet subnet create -n admin -g "$RESOURCE_GROUP" --vnet-name "$VNET" 
 
 K8S_SUBNET_ID=$(az network vnet subnet show -n k8s -g "$RESOURCE_GROUP" --vnet-name "$VNET" --query id -o tsv 2>&1)
 
-SERVICE_PRINCIPAL=$(az ad sp create-for-rbac --skip-assignment -n "aks-td-sp-delete" --years 3 --query '[appId, password]' -o tsv)
+#SERVICE_PRINCIPAL=$(az ad sp create-for-rbac --skip-assignment -n "aks-td-sp-delete" --years 3 --query '[appId, password]' -o tsv)
 
-SP=$(echo $SERVICE_PRINCIPAL | tr -d '\n')
+#SP=$(echo $SERVICE_PRINCIPAL | tr -d '\n')
 
-read APPID CLIENT_SECRET <<< "$SP"
+#read APPID CLIENT_SECRET <<< "$SP"
+
+#echo $APPID
+
+#echo $CLIENT_SECRET
+
+#az aks create -n "l6-aks-cluster" -g "$RESOURCE_GROUP" -u bankadmin -a monitoring  --service-principal $APPID --client-secret $CLIENT_SECRET \
+#--enable-cluster-autoscaler --enable-vmss --kubernetes-version 1.12.6 -l westus2 --max-count 5 -m 40 --min-count 2 --network-plugin azure \
+#-c 3 --vnet-subnet-id $K8S_SUBNET_ID -s Standard_D4s_v3   --dns-service-ip 10.179.130.10 --service-cidr 10.179.130.0/24
+
+
+#SERVICE_PRINCIPAL=$(az.cmd ad sp create-for-rbac --skip-assignment -n "aks-td-sp-delete" --years 3 --query '[appId, password]' -o tsv)
+#SP=$(echo $SERVICE_PRINCIPAL | tr -d '\n')
+#read APPID CLIENT_SECRET <<< "$SP"
+
+#L6-Hackfest-AKS-CPU
+APPID='ff9bc590-e010-42af-bccd-909c57e8249b'
+
+#L6-Hackfest-AKS-GPU
+#APPID='f96d1037-4c4c-4b17-82e1-8c4da00d11a0'
+
+CLIENT_SECRET='2z;AJ*Q.S>R-:nQOId8I*X1(DLWi$mfX[:*bD;guuh'
 
 echo $APPID
-
 echo $CLIENT_SECRET
-
+#--enable-cluster-autoscaler --enable-vmss --kubernetes-version 1.12.6 -l westus2 --max-count 5 -m 40 --min-count 2 --network-plugin azure \
 az aks create -n "l6-aks-cluster" -g "$RESOURCE_GROUP" -u bankadmin -a monitoring  --service-principal $APPID --client-secret $CLIENT_SECRET \
---enable-cluster-autoscaler --enable-vmss --kubernetes-version 1.12.6 -l westus2 --max-count 5 -m 40 --min-count 2 --network-plugin azure \
+--kubernetes-version 1.12.6 -l westus2 --max-pods 10 --network-plugin azure --generate-ssh-keys \
+--enable-cluster-autoscaler --enable-vmss --max-count 5 --min-count 2 \
 -c 3 --vnet-subnet-id $K8S_SUBNET_ID -s Standard_D4s_v3   --dns-service-ip 10.179.130.10 --service-cidr 10.179.130.0/24
+
+
+
+
+
 
 az vm create -n "data-science-workstation" -g "$RESOURCE_GROUP" --admin-username datascientist --admin-password tdD@TaSc13nC3 --image "microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntu:18.08.00" --vnet-name "$VNET" --subnet admin --size Standard_NC12
